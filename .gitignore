@@ -11,6 +11,7 @@ Thumbs.db
 # ============================================================================
 *.docx
 *.pdf
+!MER_PetCare.pdf
 *.pptx
 META_PROMPT*
 PROMPT_*

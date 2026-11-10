@@ -7,8 +7,8 @@ Trabalho 1 da disciplina de Desenvolvimento Back-End (Prof. Jr) — API REST com
 ## Integrantes do Grupo
 
 - **Integrante 1:** Eduardo Fernandes Alves
-- **Integrante 2:** (adicionar se aplicável)
-- **Integrante 3:** (adicionar se aplicável)
+- **Integrante 2:** Rafael Torres Teixeira
+
 
 ---
 
@@ -23,8 +23,15 @@ petcare/
 ├── validacao.php      # Validações de domínio (422 com lista acumulativa de erros)
 ├── index.php          # Roteador manual ($metodo, $caminho, preg_match) e handlers das rotas
 ├── requisicoes.http   # Suíte de testes para a extensão REST Client (sucesso e erros)
+├── MER_PetCare.pdf    # Especificação formal do MER e Mapeamento Relacional (Elmasri & Navathe / CEUB)
 └── README.md          # Documentação do projeto
 ```
+
+---
+
+## Especificação Formal do Banco de Dados (`MER_PetCare.pdf`)
+
+A especificação formal completa da modelagem conceitual (MER), lógica (Mapeamento Relacional em 8 Passos — padrão Elmasri & Navathe / FATECS-CEUB) e física (`InnoDB`, dicionário de dados, políticas referenciais, formas normais `1FN`/`2FN`/`3FN` e engenharia de *collation*) encontra-se consolidada no documento único **[`MER_PetCare.pdf`](MER_PetCare.pdf)** na raiz do projeto, em total conformidade com a fonte da verdade (`banco.sql`).
 
 ---
 
@@ -52,11 +59,7 @@ petcare/
    - A API responderá no endereço base: `http://localhost/petcare/`
 
 3. **Criar e popular o banco de dados (`banco.sql`):**
-   - Acesse o **phpMyAdmin** (`http://localhost/phpmyadmin`) ou utilize o cliente de linha de comando do MySQL e execute o script `petcare/banco.sql`:
-     ```bash
-     C:\xampp\mysql\bin\mysql.exe -u root < C:\xampp\htdocs\petcare\banco.sql
-     ```
-   - O script apaga (`DROP DATABASE IF EXISTS petcare`) e recria o banco `petcare` do zero com codificação `utf8mb4`, criando as tabelas `tutores`, `pets`, `usuarios` e `tokens`, além de inserir **6 tutores**, **10 pets** e **2 usuários** de teste.
+   - Acesse o **phpMyAdmin** (`http://localhost/phpmyadmin`)
    - *Observação:* A conexão em `conexao.php` utiliza a configuração padrão do XAMPP (`host=localhost`, `port=3306`, usuário `root` e senha vazia `''`).
 
 4. **Testar as rotas (`requisicoes.http`):**

@@ -1,5 +1,5 @@
-@base = http://localhost/petcare
-@token = cole_aqui_o_token_obtido_no_login
+@base = http://localhost/petcare-api-php
+@token = ddfe451fdb16a56084a5c1a1b813f25759df01f213a01335f953853a8258aab1
 
 # ============================================================================
 # 1. AUTENTICAÇÃO (POST /login e POST /logout)
