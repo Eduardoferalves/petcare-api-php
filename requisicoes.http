@@ -1,0 +1,392 @@
+@base = http://localhost/petcare
+@token = cole_aqui_o_token_obtido_no_login
+
+# ============================================================================
+# 1. AUTENTICAÇÃO (POST /login e POST /logout)
+# ============================================================================
+
+### 1.1. Login com sucesso (200 OK - retorna o token Bearer com validade de 2h)
+POST {{base}}/login
+Content-Type: application/json
+
+{
+    "email": "admin@petcare.com.br",
+    "senha": "123456"
+}
+
+### 1.2. Login - Erro 401 (senha incorreta - retorna "E-mail ou senha inválidos")
+POST {{base}}/login
+Content-Type: application/json
+
+{
+    "email": "admin@petcare.com.br",
+    "senha": "senha_incorreta"
+}
+
+### 1.3. Login - Erro 401 (e-mail inexistente - retorna a mesma mensagem por segurança)
+POST {{base}}/login
+Content-Type: application/json
+
+{
+    "email": "naoexiste@petcare.com.br",
+    "senha": "123456"
+}
+
+### 1.4. Login - Erro 422 (campos obrigatórios ausentes / e-mail inválido)
+POST {{base}}/login
+Content-Type: application/json
+
+{
+    "email": "email-invalido",
+    "senha": ""
+}
+
+### 1.5. Login - Erro 400 (corpo não é um JSON válido)
+POST {{base}}/login
+Content-Type: application/json
+
+{json_malformado
+
+
+# ============================================================================
+# 2. TUTORES - CONSULTAS PÚBLICAS (GET)
+# ============================================================================
+
+### 2.1. Listar todos os tutores (200 OK - retorna total e lista)
+GET {{base}}/tutores
+
+### 2.2. Buscar tutor por ID existente (200 OK)
+GET {{base}}/tutores/1
+
+### 2.3. Buscar tutor por ID inexistente - Erro 404
+GET {{base}}/tutores/999
+
+### 2.4. Listar pets de um tutor existente (200 OK - tutor 1 possui 3 pets)
+GET {{base}}/tutores/1/pets
+
+### 2.5. Listar pets de um tutor inexistente - Erro 404
+GET {{base}}/tutores/999/pets
+
+
+# ============================================================================
+# 3. TUTORES - OPERAÇÕES PROTEGIDAS (POST, PUT, DELETE)
+# ============================================================================
+
+### 3.1. Cadastrar novo tutor com sucesso (201 Created)
+POST {{base}}/tutores
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Juliana Martins Pereira",
+    "telefone": "(11) 99444-5566",
+    "email": "juliana.pereira@email.com"
+}
+
+### 3.2. Cadastrar tutor - Erro 401 (sem cabeçalho Authorization)
+POST {{base}}/tutores
+Content-Type: application/json
+
+{
+    "nome": "Tutor Sem Token",
+    "telefone": "(11) 90000-0000",
+    "email": "semtoken@email.com"
+}
+
+### 3.3. Cadastrar tutor - Erro 401 (token inválido ou expirado)
+POST {{base}}/tutores
+Authorization: Bearer token_invalido_1234567890
+Content-Type: application/json
+
+{
+    "nome": "Tutor Token Inválido",
+    "telefone": "(11) 90000-0000",
+    "email": "tokeninvalido@email.com"
+}
+
+### 3.4. Cadastrar tutor - Erro 409 Conflict (e-mail já cadastrado)
+POST {{base}}/tutores
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Outra Ana Mendes",
+    "telefone": "(11) 91111-2222",
+    "email": "ana.mendes@email.com"
+}
+
+### 3.5. Cadastrar tutor - Erro 422 (acumula todos os erros de validação)
+POST {{base}}/tutores
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "A",
+    "telefone": "   ",
+    "email": "email_sem_arroba"
+}
+
+### 3.6. Cadastrar tutor - Erro 400 (corpo JSON malformado)
+POST {{base}}/tutores
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+texto_puro_nao_json
+
+### 3.7. Atualizar tutor existente com sucesso (200 OK)
+PUT {{base}}/tutores/6
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Roberto Almeida Prado Filho",
+    "telefone": "(51) 98234-9999",
+    "email": "roberto.prado@email.com"
+}
+
+### 3.8. Atualizar tutor - Erro 401 (sem token)
+PUT {{base}}/tutores/6
+Content-Type: application/json
+
+{
+    "nome": "Roberto Sem Token",
+    "telefone": "(51) 98234-9999",
+    "email": "roberto.prado@email.com"
+}
+
+### 3.9. Atualizar tutor - Erro 404 (tutor inexistente)
+PUT {{base}}/tutores/999
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Tutor Inexistente",
+    "telefone": "(11) 98888-7777",
+    "email": "inexistente@email.com"
+}
+
+### 3.10. Atualizar tutor - Erro 409 Conflict (tentando usar e-mail de outro tutor)
+PUT {{base}}/tutores/6
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Roberto Almeida Prado",
+    "telefone": "(51) 98234-5678",
+    "email": "ana.mendes@email.com"
+}
+
+### 3.11. Atualizar tutor - Erro 422 (dados inválidos)
+PUT {{base}}/tutores/6
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "",
+    "telefone": "",
+    "email": "invalido"
+}
+
+### 3.12. Excluir tutor que possui pets vinculados - Erro 409 Conflict (ON DELETE RESTRICT)
+DELETE {{base}}/tutores/1
+Authorization: Bearer {{token}}
+
+### 3.13. Excluir tutor sem pets vinculados com sucesso (204 No Content - tutor 6 não tem pets)
+DELETE {{base}}/tutores/6
+Authorization: Bearer {{token}}
+
+### 3.14. Excluir tutor - Erro 404 (tutor inexistente)
+DELETE {{base}}/tutores/999
+Authorization: Bearer {{token}}
+
+### 3.15. Excluir tutor - Erro 401 (sem token)
+DELETE {{base}}/tutores/2
+
+
+# ============================================================================
+# 4. PETS - CONSULTAS PÚBLICAS (GET)
+# ============================================================================
+
+### 4.1. Listar todos os pets (200 OK)
+GET {{base}}/pets
+
+### 4.2. Listar pets filtrando por espécie válida ?especie=cachorro (200 OK)
+GET {{base}}/pets?especie=cachorro
+
+### 4.3. Listar pets filtrando por espécie válida ?especie=gato (200 OK)
+GET {{base}}/pets?especie=gato
+
+### 4.4. Listar pets com filtro de espécie inválida - Erro 422
+GET {{base}}/pets?especie=dinossauro
+
+### 4.5. Buscar pet por ID existente (200 OK - inclui tutor_nome via JOIN)
+GET {{base}}/pets/1
+
+### 4.6. Buscar pet por ID inexistente - Erro 404
+GET {{base}}/pets/999
+
+
+# ============================================================================
+# 5. PETS - OPERAÇÕES PROTEGIDAS (POST, PUT, DELETE)
+# ============================================================================
+
+### 5.1. Cadastrar novo pet com sucesso (201 Created)
+POST {{base}}/pets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Paçoca",
+    "especie": "cachorro",
+    "raca": "SRD (Vira-lata)",
+    "data_nascimento": "2023-07-10",
+    "peso_kg": 11.4,
+    "tutor_id": 2
+}
+
+### 5.2. Cadastrar pet sem raça (raca = null) com sucesso (201 Created)
+POST {{base}}/pets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Frajola",
+    "especie": "gato",
+    "raca": null,
+    "data_nascimento": "2024-01-15",
+    "peso_kg": 3.8,
+    "tutor_id": 3
+}
+
+### 5.3. Cadastrar pet - Erro 401 (sem token)
+POST {{base}}/pets
+Content-Type: application/json
+
+{
+    "nome": "Rex",
+    "especie": "cachorro",
+    "raca": "Pastor Alemão",
+    "data_nascimento": "2022-05-10",
+    "peso_kg": 30.0,
+    "tutor_id": 1
+}
+
+### 5.4. Cadastrar pet - Erro 422 (múltiplos erros: nome curto, espécie inválida, peso fora da faixa, data futura e tutor inexistente)
+POST {{base}}/pets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "X",
+    "especie": "tartaruga",
+    "raca": 12345,
+    "data_nascimento": "2099-12-31",
+    "peso_kg": 250.5,
+    "tutor_id": 999
+}
+
+### 5.5. Cadastrar pet - Erro 422 (data de calendário inexistente e peso enviado como string)
+POST {{base}}/pets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Bolt",
+    "especie": "cachorro",
+    "raca": "Beagle",
+    "data_nascimento": "2024-02-31",
+    "peso_kg": "12.5",
+    "tutor_id": 1
+}
+
+### 5.6. Cadastrar pet - Erro 400 (corpo JSON inválido)
+POST {{base}}/pets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+[json_incompleto
+
+### 5.7. Atualizar pet existente com sucesso (200 OK)
+PUT {{base}}/pets/10
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Mel Atualizada",
+    "especie": "cachorro",
+    "raca": "Poodle Toy",
+    "data_nascimento": "2020-02-25",
+    "peso_kg": 6.45,
+    "tutor_id": 5
+}
+
+### 5.8. Atualizar pet - Erro 401 (sem token)
+PUT {{base}}/pets/10
+Content-Type: application/json
+
+{
+    "nome": "Mel Sem Token",
+    "especie": "cachorro",
+    "raca": "Poodle",
+    "data_nascimento": "2020-02-25",
+    "peso_kg": 6.1,
+    "tutor_id": 5
+}
+
+### 5.9. Atualizar pet - Erro 404 (pet inexistente)
+PUT {{base}}/pets/999
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Pet Fantasma",
+    "especie": "gato",
+    "raca": "Siamês",
+    "data_nascimento": "2022-01-01",
+    "peso_kg": 4.0,
+    "tutor_id": 1
+}
+
+### 5.10. Atualizar pet - Erro 422 (tutor_id inexistente e peso negativo)
+PUT {{base}}/pets/10
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "nome": "Mel",
+    "especie": "cachorro",
+    "raca": "Poodle",
+    "data_nascimento": "2020-02-25",
+    "peso_kg": -3.0,
+    "tutor_id": 999
+}
+
+### 5.11. Excluir pet existente com sucesso (204 No Content)
+DELETE {{base}}/pets/10
+Authorization: Bearer {{token}}
+
+### 5.12. Excluir pet - Erro 404 (pet inexistente ou já excluído)
+DELETE {{base}}/pets/999
+Authorization: Bearer {{token}}
+
+### 5.13. Excluir pet - Erro 401 (sem token)
+DELETE {{base}}/pets/1
+
+
+# ============================================================================
+# 6. ENCERRAMENTO DE SESSÃO (POST /logout) E ROTAS INEXISTENTES (404)
+# ============================================================================
+
+### 6.1. Logout sem token - Erro 401 ("Token não informado")
+POST {{base}}/logout
+
+### 6.2. Logout com sucesso (204 No Content - apaga o token da tabela tokens)
+POST {{base}}/logout
+Authorization: Bearer {{token}}
+
+### 6.3. Tentativa de reutilizar o mesmo token após o logout - Erro 401 ("Token inválido ou expirado")
+POST {{base}}/logout
+Authorization: Bearer {{token}}
+
+### 6.4. Qualquer outra rota não mapeada - Erro 404 ("Rota não encontrada")
+GET {{base}}/consultas
